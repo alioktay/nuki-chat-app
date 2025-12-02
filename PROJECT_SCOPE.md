@@ -3,7 +3,8 @@
 
 ## Overview
 
-This document defines the features and scope of the real-time chat application. The scope outlines what functionality is included in the system design and implementation, as well as what is explicitly out of scope for this project.
+This document defines the features and scope of the real-time chat application. 
+The scope outlines what functionality is included in the system design and implementation, as well as what is explicitly out of scope for this project.
 
 ---
 
@@ -43,9 +44,8 @@ This document defines the features and scope of the real-time chat application. 
 
 #### Message Types
 - Text messages
-- Video messages (via URL)
-- File attachments (images, documents)
-- Message metadata (sender, timestamp, edit status)
+- File attachments (videos, images, documents)
+- Message metadata (sender, timestamp, edit/delete status)
 
 ### 3. Chat Rooms
 

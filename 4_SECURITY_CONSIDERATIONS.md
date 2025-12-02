@@ -8,7 +8,9 @@
 
 ## Summary
 
-The application implements multiple layers of security to protect user data and prevent unauthorized access. While the current implementation covers essential security requirements, there are opportunities for enhancement, particularly in areas like rate limiting, 2FA, and comprehensive audit logging.
+The application implements multiple layers of security to protect user data and prevent unauthorized access. 
+While the current implementation covers essential security requirements, there are opportunities for enhancement, 
+particularly in areas like rate limiting, 2FA, and comprehensive audit logging.
 
 **Key Security Strengths**:
 - Strong authentication (OAuth 2.1/OpenID Connect preferred, JWT as alternative)

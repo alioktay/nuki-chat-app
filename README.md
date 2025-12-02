@@ -4,7 +4,8 @@
 
 ## Overview
 
-This documentation provides the system design for a real-time chat application as specified in the assignment requirements. The application supports user authentication, real-time messaging, video sharing, direct messages, and group chat rooms.
+This documentation provides the system design for a real-time chat application as specified in the assignment requirements. 
+The application supports user authentication, real-time messaging, document (video) sharing, direct messages, and group chat rooms.
 
 ---
 
@@ -41,7 +42,6 @@ Database schema documentation including:
 - Entity Relationship Diagram
 - Detailed schema for all tables
 - Relationships, constraints, and indexes
-- Database design principles
 
 **Visual Diagram**: `2_DATABASE_SCHEMA.drawio` (Draw.io format)
 
@@ -49,7 +49,7 @@ Database schema documentation including:
 **File**: `3_API_DESIGN.md`
 
 API design documentation covering:
-- REST API endpoints (authentication, users, rooms, messages, files)
+- REST API endpoints (authentication, users, rooms, messages, documents/files)
 - WebSocket API (STOMP protocol)
 - Request/response formats
 - Error handling

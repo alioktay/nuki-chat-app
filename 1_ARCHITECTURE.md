@@ -6,7 +6,8 @@
 
 ## Summary
 
-This architecture provides a solid foundation for a scalable, real-time chat application. The separation of concerns, use of modern technologies, and scalable patterns ensure the system can grow with user demand while maintaining performance and reliability.
+This architecture provides a solid foundation for a scalable, real-time chat application. 
+The separation of concerns, use of modern technologies, and scalable patterns ensure the system can grow with user demand while maintaining performance and reliability.
 
 **Key Architectural Strengths**:
 - Clear separation of layers
@@ -90,7 +91,7 @@ For a detailed visual representation of the system architecture, including all c
 - **Migrations**: Liquibase for version-controlled schema changes
 
 ### Message Broker
-- **Technology**: Apache Kafka (KRaft mode - no Zookeeper dependency)
+- **Technology**: Apache Kafka
 - **Purpose**: 
   - Decouple message publishing from WebSocket distribution
   - Enable horizontal scaling of backend instances
@@ -179,9 +180,9 @@ For a detailed visual representation of the system architecture, including all c
 **Application Layer**:
 - **Reverse Proxy**: Nginx/ALB (SSL termination, load balancing)
 - **Application Servers**: Multiple Spring Boot instances (auto-scaling)
-- **Database**: PostgreSQL primary + replicas (managed service: RDS, Cloud SQL)
-- **Message Broker**: Kafka cluster (managed service: MSK, Confluent Cloud)
-- **Cache**: Redis cluster (managed service: ElastiCache, Cloud Memorystore)
+- **Database**: PostgreSQL primary + replicas 
+- **Message Broker**: Kafka cluster
+- **Cache**: Redis cluster
 
 **Storage & CDN**:
 - **File Storage**: AWS S3 (or compatible object storage) for uploaded files

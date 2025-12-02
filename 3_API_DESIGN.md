@@ -203,27 +203,6 @@ Response: 200 - { "fileUrl": "string" }
 
 **Response**: Message is saved to database, published to Kafka, and broadcast to all subscribers
 
-### Room Events
-**Destination**: `/topic/room/{roomId}/events`
-
-**Subscription**: Client subscribes to receive room-level events
-
-**Event Types**:
-- `USER_JOINED`: User joined the room
-- `USER_LEFT`: User left the room
-- `ROOM_UPDATED`: Room metadata changed (name, description)
-
-**Event Format**:
-```json
-{
-  "eventType": "USER_JOINED|USER_LEFT|ROOM_UPDATED",
-  "roomId": "uuid",
-  "userId": "uuid", // (for USER_JOINED/USER_LEFT)
-  "timestamp": "2024-01-01T12:00:00Z",
-  "data": {} // (additional event-specific data)
-}
-```
-
 ---
 
 ## API Design Principles
