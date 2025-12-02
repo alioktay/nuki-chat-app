@@ -5,6 +5,7 @@
 ## Overview
 
 This documentation provides an alternative system design for a real-time chat application using AWS cloud-first, serverless architecture.
+
 ---
 
 ## Architecture Highlights
