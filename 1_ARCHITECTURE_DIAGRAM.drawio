@@ -1,0 +1,148 @@
+<mxfile host="drawio-plugin" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" modified="2025-12-02T04:45:39.519Z" etag="9g3V9aJm_CBGRz8meiBZ" version="22.1.22" type="embed">
+  <diagram name="System Architecture" id="system-architecture">
+    <mxGraphModel dx="1432" dy="750" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="none" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Real-Time Chat Application - System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="810" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="postgresql" value="PostgreSQL Database&#xa;(Primary Data Store)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="40" y="770" width="250" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka" value="Apache Kafka&#xa;(Message Broker)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="320" y="770" width="250" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="AWS S3&#xa;(Object Storage)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;align=center;" parent="1" vertex="1">
+          <mxGeometry x="610" y="770" width="250" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="spring-boot" value="Spring Boot Backend&#xa;(Java, Monolithic)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c5e1a5;strokeColor=#82b366;fontSize=12;align=center;horizontal=1;verticalAlign=top;labelPosition=center;verticalLabelPosition=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="350" width="810" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="rest-api" target="spring-security" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24" value="Auth" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="8" vertex="1" connectable="0">
+          <mxGeometry x="0.0615" y="2" relative="1" as="geometry">
+            <mxPoint x="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rest-api" value="REST API&#xa;(Spring Web MVC)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1f5d4;strokeColor=#82b366;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="50" y="490" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" parent="1" source="websocket-handler" target="kafka-producer" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="websocket-handler" value="WebSocket Handler&#xa;(STOMP Protocol)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1f5d4;strokeColor=#82b366;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="480" y="390" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="kafka-producer" target="spring-data-jpa" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=default;shadow=0;anchorPointDirection=1;startArrow=classic;startFill=1;" parent="1" source="kafka-producer" target="kafka" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka-producer" value="Kafka Client&amp;nbsp;&lt;br&gt;(Pub/Sub)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1f5d4;strokeColor=#82b366;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="480" y="510" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="spring-security" target="spring-data-jpa" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="12" value="Security&lt;br&gt;checks" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="6" vertex="1" connectable="0">
+          <mxGeometry x="-0.3514" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="spring-security" value="Spring Security&lt;br&gt;(Authentication &amp;amp; Authorization)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1f5d4;strokeColor=#82b366;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="200" y="390" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="spring-data-jpa" target="rest-api" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="Data retrievel" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="4" vertex="1" connectable="0">
+          <mxGeometry x="-0.32" y="2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="spring-data-jpa" value="Spring Data JPA&#xa;(Database Access)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1f5d4;strokeColor=#82b366;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="50" y="580" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="angular-frontend" value="Angular Frontend&#xa;(TypeScript, RxJS, STOMP.js)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c5d9f1;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=top;horizontal=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="120" width="810" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="spring-security" target="3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="325" y="300" />
+              <mxPoint x="175" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9" value="JWT" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="2" vertex="1" connectable="0">
+          <mxGeometry x="-0.2937" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3" value="Login, register, initial UI load" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="50" y="160" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="rest-api" target="3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="10" value="API Callsl" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="7" vertex="1" connectable="0">
+          <mxGeometry x="-0.12" y="2" relative="1" as="geometry">
+            <mxPoint x="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="13" value="Messaging" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="325" y="160" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="spring-security" target="13" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="335" y="400" as="sourcePoint" />
+            <mxPoint x="185" y="230" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="15" value="JWT" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="14" vertex="1" connectable="0">
+          <mxGeometry x="-0.2937" y="-2" relative="1" as="geometry">
+            <mxPoint y="-40" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="websocket-handler" target="13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="17" value="Realtime messaging" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="16" vertex="1" connectable="0">
+          <mxGeometry x="0.025" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="21" edge="1" target="rest-api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="770" y="740" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="770" y="330" />
+              <mxPoint x="175" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="21" value="File Upload/Download" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=center;" parent="1" vertex="1">
+          <mxGeometry x="590" y="160" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.54;entryY=0.013;entryDx=0;entryDy=0;entryPerimeter=0;startArrow=classic;startFill=1;" parent="1" source="spring-data-jpa" target="postgresql" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="rest-api" target="s3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="238" y="570" />
+              <mxPoint x="440" y="570" />
+              <mxPoint x="440" y="600" />
+              <mxPoint x="735" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

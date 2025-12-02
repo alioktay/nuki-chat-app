@@ -1,0 +1,989 @@
+openapi: 3.0.3
+info:
+  title: Real-Time Chat Application API
+  description: |
+    REST API for a real-time chat application supporting direct messages, group rooms, 
+    text messages, video sharing, file uploads, and real-time communication via WebSocket.
+    
+    ## Authentication
+    All endpoints except `/api/v1/auth/register` and `/api/v1/auth/login` require 
+    authentication via OAuth 2.1/OpenID Connect (preferred) or JWT Bearer token in the Authorization header.
+    
+    ## Base URL
+    - Development: `http://localhost:8080/api/v1`
+    - Production: `https://api.example.com/api/v1`
+    
+    ## WebSocket API (STOMP Protocol)
+    
+    Real-time messaging is handled via WebSocket using the STOMP protocol. The WebSocket connection 
+    provides bidirectional communication for live message delivery and room events.
+    
+    ### Connection
+    - **Development**: `ws://localhost:8080/ws`
+    - **Production**: `wss://api.example.com/ws`
+    
+    ### Authentication
+    WebSocket connections require authentication. The token (OAuth 2.1/OpenID Connect or JWT) must be 
+    provided during the WebSocket handshake, typically as a query parameter or in the `Authorization` header.
+    
+    Example connection URL with token: ws://localhost:8080/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    
+    ## File Storage
+    Files are uploaded to AWS S3 and delivered via CDN for optimal performance.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.example.com/api/v1
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Users
+    description: User management operations
+  - name: Chat Rooms
+    description: Chat room and direct message management
+  - name: Messages
+    description: Message operations (create, read, update, delete, search)
+  - name: Files
+    description: File upload operations
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Creates a new user account with username, email, and password
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              username: johndoe
+              email: john.doe@example.com
+              password: securePassword123
+      responses:
+        '201':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440000
+                username: johndoe
+                email: john.doe@example.com
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Authenticates a user and returns access and refresh tokens (OAuth/JWT)
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              username: johndoe
+              password: securePassword123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtResponse'
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                type: Bearer
+                username: johndoe
+                expiresIn: 3600000
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Generates a new access token using a valid refresh token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+            example:
+              refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user
+      description: Returns the currently authenticated user's information
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: Returns a list of all users in the system
+      operationId: getAllUsers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /rooms/dms:
+    get:
+      tags:
+        - Chat Rooms
+      summary: Get direct messages
+      description: Returns all direct message conversations for the current user
+      operationId: getDirectMessages
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Direct messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatRoomDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Chat Rooms
+      summary: Create direct message
+      description: Creates or finds an existing direct message conversation with another user
+      operationId: createDirectMessage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: UUID of the user to start a conversation with
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Direct message created or found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoomDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rooms/rooms:
+    get:
+      tags:
+        - Chat Rooms
+      summary: Get group rooms
+      description: Returns paginated list of group chat rooms
+      operationId: getGroupRooms
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-indexed)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Group rooms retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageChatRoomDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /rooms:
+    post:
+      tags:
+        - Chat Rooms
+      summary: Create group room
+      description: Creates a new group chat room
+      operationId: createRoom
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomRequest'
+            example:
+              name: Team Chat
+              description: Main team communication channel
+      responses:
+        '201':
+          description: Room created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoomDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /rooms/{roomId}:
+    get:
+      tags:
+        - Chat Rooms
+      summary: Get room by ID
+      description: Returns details of a specific chat room
+      operationId: getRoomById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          description: UUID of the room
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Room details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoomDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User is not a member of the room
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Chat Rooms
+      summary: Delete room
+      description: Deletes a chat room (only room creator can delete)
+      operationId: deleteRoom
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          description: UUID of the room to delete
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Room deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User is not the room creator
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /messages:
+    post:
+      tags:
+        - Messages
+      summary: Create message
+      description: Creates a new text message in a chat room
+      operationId: createMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageRequest'
+            example:
+              roomId: 550e8400-e29b-41d4-a716-446655440000
+              content: Hello, this is a test message!
+              messageType: TEXT
+              parentMessageId: null
+      responses:
+        '201':
+          description: Message created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User is not a member of the room
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /messages/document:
+    post:
+      tags:
+        - Messages
+      summary: Create document message
+      description: Creates a new message with a file URL (from file upload)
+      operationId: createDocumentMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocumentMessageRequest'
+            example:
+              roomId: 550e8400-e29b-41d4-a716-446655440000
+              fileUrl: https://cdn.example.com/files/550e8400-e29b-41d4-a716-446655440000.pdf
+              messageType: DOCUMENT
+      responses:
+        '201':
+          description: Document message created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User is not a member of the room
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /messages/rooms/{roomId}:
+    get:
+      tags:
+        - Messages
+      summary: Get messages for room
+      description: Returns paginated list of messages for a specific room
+      operationId: getMessagesByRoom
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          description: UUID of the room
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number (0-indexed)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageMessageDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User is not a member of the room
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /messages/{messageId}:
+    put:
+      tags:
+        - Messages
+      summary: Update message
+      description: Updates the content of an existing message (only message sender can update)
+      operationId: updateMessage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          description: UUID of the message to update
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMessageRequest'
+            example:
+              content: Updated message content
+      responses:
+        '200':
+          description: Message updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User is not the message sender
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Messages
+      summary: Delete message
+      description: Soft deletes a message (only message sender can delete)
+      operationId: deleteMessage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          description: UUID of the message to delete
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Message deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User is not the message sender
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /messages/{messageId}/replies:
+    get:
+      tags:
+        - Messages
+      summary: Get message replies
+      description: Returns all replies to a specific message (threading)
+      operationId: getMessageReplies
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          description: UUID of the parent message
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Replies retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /files/upload:
+    post:
+      tags:
+        - Files
+      summary: Upload file
+      description: Uploads a file (image, video, or document) to AWS S3. Returns a signed URL for file access, delivered via CDN.
+      operationId: uploadFile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload. Allowed types - images, videos, documents
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fileUrl:
+                    type: string
+                    format: uri
+                    description: Signed URL for file access (CDN-delivered)
+                    example: https://cdn.example.com/files/550e8400-e29b-41d4-a716-446655440000.jpg
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OAuth 2.1/OpenID Connect access token (preferred) or JWT token obtained from /auth/login endpoint
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          format: password
+          minLength: 6
+          example: securePassword123
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: johndoe
+        password:
+          type: string
+          format: password
+          example: securePassword123
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    JwtResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Access token (OAuth/JWT)
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          description: Refresh token (for JWT approach)
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type:
+          type: string
+          example: Bearer
+        username:
+          type: string
+          example: johndoe
+        expiresIn:
+          type: integer
+          description: Token expiration time in milliseconds
+          example: 3600000
+
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+
+    ChatRoomDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        conversationType:
+          type: string
+          enum: [DM, ROOM]
+          example: ROOM
+        name:
+          type: string
+          example: Team Chat
+        description:
+          type: string
+          nullable: true
+          example: Main team communication channel
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-12-01T10:00:00Z
+        createdByUsername:
+          type: string
+          example: johndoe
+        memberCount:
+          type: integer
+          minimum: 0
+          example: 5
+
+    CreateRoomRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Team Chat
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Main team communication channel
+
+    CreateMessageRequest:
+      type: object
+      required:
+        - roomId
+        - messageType
+      properties:
+        roomId:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        content:
+          type: string
+          maxLength: 5000
+          nullable: true
+          example: Hello, this is a test message!
+        messageType:
+          type: string
+          enum: [TEXT, VIDEO, IMAGE, DOCUMENT]
+          default: TEXT
+        parentMessageId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the parent message for threading/replies
+
+    CreateDocumentMessageRequest:
+      type: object
+      required:
+        - roomId
+        - fileUrl
+        - messageType
+      properties:
+        roomId:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        fileUrl:
+          type: string
+          format: uri
+          description: URL from file upload endpoint
+          example: https://cdn.example.com/files/550e8400-e29b-41d4-a716-446655440000.pdf
+        messageType:
+          type: string
+          enum: [VIDEO, IMAGE, DOCUMENT]
+        parentMessageId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the parent message for threading/replies
+
+    UpdateMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          example: Updated message content
+
+    MessageDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        content:
+          type: string
+          nullable: true
+          example: Hello, this is a test message!
+        senderId:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        roomId:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        messageType:
+          type: string
+          enum: [TEXT, VIDEO, IMAGE, DOCUMENT]
+          example: TEXT
+        documentUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: https://example.com/video.mp4
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-12-01T10:00:00Z
+        parentMessageId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the parent message (for threading)
+        deleted:
+          type: boolean
+          default: false
+        edited:
+          type: boolean
+          default: false
+
+    PageMessageDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDto'
+        totalElements:
+          type: integer
+          example: 500
+        totalPages:
+          type: integer
+          example: 10
+        size:
+          type: integer
+          example: 50
+        number:
+          type: integer
+          example: 0
+        first:
+          type: boolean
+          example: true
+        last:
+          type: boolean
+          example: false
+
+    PageChatRoomDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatRoomDto'
+        totalElements:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 5
+        size:
+          type: integer
+          example: 20
+        number:
+          type: integer
+          example: 0
+        first:
+          type: boolean
+          example: true
+        last:
+          type: boolean
+          example: false
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: 2024-12-01T10:00:00Z
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: Validation failed
+        path:
+          type: string
+          example: /api/v1/messages
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: content
+              message:
+                type: string
+                example: Message content cannot be empty
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error or invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-12-01T10:00:00Z
+            status: 400
+            error: Bad Request
+            message: Validation failed
+            path: /api/v1/messages
+            details:
+              - field: content
+                message: Message content cannot be empty
+
+    Unauthorized:
+      description: Unauthorized - authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-12-01T10:00:00Z
+            status: 401
+            error: Unauthorized
+            message: Invalid or expired token
+            path: /api/v1/messages
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-12-01T10:00:00Z
+            status: 404
+            error: Not Found
+            message: Resource not found
+            path: /api/v1/rooms/550e8400-e29b-41d4-a716-446655440000
